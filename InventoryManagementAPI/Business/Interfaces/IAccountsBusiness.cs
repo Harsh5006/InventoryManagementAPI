@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 
-namespace InventoryManagementAPI.Business
+namespace InventoryManagementAPI.Business.Interfaces
 {
     public interface IAccountsBusiness
     {

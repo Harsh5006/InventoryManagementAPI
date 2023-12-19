@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using System.Reflection.Metadata;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Data
 {
@@ -25,13 +27,17 @@ namespace InventoryManagementAPI.Data
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    //base.OnConfiguring(optionsBuilder);
-            
+
         //    optionsBuilder.UseSqlServer(@"Data Source = (localDb)\ProjectModels;Initial Catalog=InventoryManagementDatabase");
         //}
-        
+
         public override int SaveChanges()
         {
             return base.SaveChanges();
+        }
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return base.SaveChangesAsync(cancellationToken);
         }
 
     }

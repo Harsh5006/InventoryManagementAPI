@@ -1,9 +1,10 @@
-﻿using InventoryManagementAPI.Business;
+﻿using InventoryManagementAPI.Business.Interfaces;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Controllers
 {
@@ -25,8 +26,7 @@ namespace InventoryManagementAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public IActionResult Put([FromBody] Department department)
+        public IActionResult Post([FromBody] Department department)
         {
             if (!ModelState.IsValid)
             {
@@ -42,15 +42,34 @@ namespace InventoryManagementAPI.Controllers
         }
 
         [HttpDelete]
-        public IActionResult Delete(int departmentId)
+        [Route("{departmentId}")]
+        public async Task<IActionResult> Delete(int departmentId)
         {
-            return Ok();
+            var success = await departmentBusiness.DeleteDepartment(departmentId);
+
+            if (success)
+            {
+                return Ok("Department Successfully Deleted.");
+            }
+            return BadRequest();
         }
 
         [HttpPatch]
+        [Route("{departmentId}")]
         public IActionResult Patch(int departmentId, [FromBody] Department department)
         {
-            return Ok();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            department.Id = departmentId;
+            var success = departmentBusiness.Patch(department);
+
+            if (success)
+            {
+                return Ok("Update Successful");
+            }
+            return BadRequest();
         }
 
         

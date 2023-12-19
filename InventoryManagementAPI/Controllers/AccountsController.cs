@@ -1,6 +1,7 @@
-﻿using InventoryManagementAPI.Business;
+﻿using InventoryManagementAPI.Business.Interfaces;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -55,7 +56,21 @@ namespace InventoryManagementAPI.Controllers
             return BadRequest();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> AddAdmin([FromBody] RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            var result = await accountsBusiness.Register(model, "Admin");
 
 
+            if (result == true)
+            {
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            else return BadRequest();
+        }
     }
 }

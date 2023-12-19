@@ -1,4 +1,5 @@
-﻿using InventoryManagementAPI.Data;
+﻿using InventoryManagementAPI.Business.Interfaces;
+using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -51,10 +52,6 @@ namespace InventoryManagementAPI.Business
             return null;
         }
 
-        public async Task<ApplicationUser> GetCurrentUser()
-        {
-            
-        }
 
     }
 }

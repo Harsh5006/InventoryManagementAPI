@@ -1,12 +1,16 @@
 ﻿using InventoryManagementAPI.Business;
+using InventoryManagementAPI.Business.Interfaces;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Security.Permissions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Controllers
 {
@@ -15,11 +19,14 @@ namespace InventoryManagementAPI.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductBusiness productBusiness;
+        private readonly UserManager<IdentityUser> userManager;
 
-        public ProductController(IProductBusiness productBusiness)
+        public ProductController(IProductBusiness productBusiness,UserManager<IdentityUser> userManager)
         {
             this.productBusiness = productBusiness;
+            this.userManager = userManager;
         }
+        
 
         [HttpGet]
         [Route("{departmentId}")]
@@ -34,8 +41,7 @@ namespace InventoryManagementAPI.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "Admin")]
-        public IActionResult Put([FromBody] Product product)
+        public IActionResult Post([FromBody] Product product)
         {
             if (!ModelState.IsValid) return BadRequest();
 
@@ -46,16 +52,46 @@ namespace InventoryManagementAPI.Controllers
         }
 
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int productId)
+        [HttpDelete("{productId}")]
+        public async  Task<IActionResult> Delete(int productId)
         {
-            return Ok();
+            var success = await productBusiness.DeleteProduct(productId);
+
+            if(success)
+            {
+                return Ok();
+            }
+            return BadRequest();
         }
 
-        [HttpPut]
-        public IActionResult Patch(string productId, [FromBody] Product product)
+        [HttpPatch("{productId}")]
+        public async Task<IActionResult> Patch(int productId, [FromBody] Product product)
         {
-            return Ok();
+            product.Id = productId;
+
+            var success = await productBusiness.Put(product);
+
+            if (success)
+            {
+                return Ok();
+            }
+            return BadRequest();
         }
+        [HttpGet]
+        public async Task<IActionResult> GetEmployeeProducts()
+        {
+            var user = await userManager.GetUserAsync(User);
+            var userId = await userManager.GetUserIdAsync(user);
+
+            var employeeProducts = productBusiness.GetAllEmployeeProducts(userId);
+
+            if(employeeProducts == null)
+            {
+                return Ok("No Products are allocated yet.");
+            }
+            return Ok(employeeProducts);
+        }
+
+
     }
 }
