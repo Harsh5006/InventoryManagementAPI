@@ -10,39 +10,46 @@ namespace InventoryManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DepartmentController : ControllerBase
+    [Authorize(Roles = "Admin")]
+    public class DepartmentsController : ControllerBase
     {
         private readonly IDepartmentBusiness departmentBusiness;
 
-        public DepartmentController(IDepartmentBusiness departmentBusiness)
+        public DepartmentsController(IDepartmentBusiness departmentBusiness)
         {
             this.departmentBusiness = departmentBusiness;
         }
 
         [HttpGet]
+        [ProducesResponseType(200)]
+        [AllowAnonymous]
         public IActionResult Get()
         {
+            
             return Ok(departmentBusiness.GetAllDepartments());
         }
 
         [HttpPost]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
         public IActionResult Post([FromBody] Department department)
         {
             if (!ModelState.IsValid)
             {
                 return StatusCode(StatusCodes.Status400BadRequest);
             }
-            var flag = departmentBusiness.AddNewDepartment(department);
+            var success = departmentBusiness.AddNewDepartment(department);
 
-            if (flag == true)
+            if (success)
             {
                 return StatusCode(StatusCodes.Status201Created);
             }
             else return BadRequest();
         }
 
-        [HttpDelete]
-        [Route("{departmentId}")]
+        [HttpDelete("{departmentId}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
         public async Task<IActionResult> Delete(int departmentId)
         {
             var success = await departmentBusiness.DeleteDepartment(departmentId);
@@ -56,14 +63,16 @@ namespace InventoryManagementAPI.Controllers
 
         [HttpPatch]
         [Route("{departmentId}")]
-        public IActionResult Patch(int departmentId, [FromBody] Department department)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> Patch(int departmentId, [FromBody] Department department)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
             department.Id = departmentId;
-            var success = departmentBusiness.Patch(department);
+            var success = await departmentBusiness.Patch(department);
 
             if (success)
             {
@@ -71,7 +80,5 @@ namespace InventoryManagementAPI.Controllers
             }
             return BadRequest();
         }
-
-        
     }
 }

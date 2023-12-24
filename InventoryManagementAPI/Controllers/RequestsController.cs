@@ -10,25 +10,25 @@ namespace InventoryManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RequestController : ControllerBase
+    public class RequestsController : ControllerBase
     {
         private readonly IRequestBusiness requestBusiness;
         private readonly UserManager<IdentityUser> userManager;
 
-        public RequestController(IRequestBusiness requestBusiness, UserManager<IdentityUser> userManager)
+        public RequestsController(IRequestBusiness requestBusiness, UserManager<IdentityUser> userManager)
         {
             this.requestBusiness = requestBusiness;
             this.userManager = userManager;
         }
 
         [HttpGet]
-        
         public async Task<IActionResult> Get(string userId)
         {
             if (userId == null)
             {
                 var user = await userManager.GetUserAsync(User);
                 userId = await userManager.GetUserIdAsync(user);
+                
 
                 var list = await requestBusiness.GetAllEmployeeRequests(userId);
 
@@ -109,7 +109,7 @@ namespace InventoryManagementAPI.Controllers
         }
 
         [HttpPatch]
-        [Route("{id}")]
+        [Route("/reviewRequest/{id}")]
         public async Task<IActionResult> ReviewRequest(int id,bool accept)
         {
             var success = await requestBusiness.ReviewRequest(id, accept);

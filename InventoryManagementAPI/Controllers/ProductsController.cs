@@ -1,5 +1,4 @@
-﻿using InventoryManagementAPI.Business;
-using InventoryManagementAPI.Business.Interfaces;
+﻿using InventoryManagementAPI.Business.Interfaces;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -16,12 +15,12 @@ namespace InventoryManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductsController : ControllerBase
     {
         private readonly IProductBusiness productBusiness;
         private readonly UserManager<IdentityUser> userManager;
 
-        public ProductController(IProductBusiness productBusiness,UserManager<IdentityUser> userManager)
+        public ProductsController(IProductBusiness productBusiness,UserManager<IdentityUser> userManager)
         {
             this.productBusiness = productBusiness;
             this.userManager = userManager;
@@ -41,11 +40,11 @@ namespace InventoryManagementAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] Product product)
+        public async Task<IActionResult> Post([FromBody] Product product)
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            bool success = productBusiness.AddProductToDepartment(product);
+            bool success = await productBusiness.AddProductToDepartment(product);
 
             if (success == false) return BadRequest();
             return StatusCode(StatusCodes.Status201Created);

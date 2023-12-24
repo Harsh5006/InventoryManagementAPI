@@ -19,7 +19,6 @@ namespace InventoryManagementAPI.Models
         public string UserId { get; set; }
         [JsonIgnore]
         public ApplicationUser User { get; set; }
-        [MinLength(1)]
         [Required]
         public int quantity { get; set; }
         public string RequestStatus { get; set; }

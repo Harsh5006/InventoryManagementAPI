@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InventoryManagementAPI.Models
 {
-    public class CreateRoleViewModel
+    public class CreateRoleDTO
     {
         [Required]
         public string RoleName { get; set; }

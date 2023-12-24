@@ -20,7 +20,7 @@ namespace InventoryManagementAPI.Business
             this.appDbContext = appDbContext;
         }
 
-        public async Task<bool> Register(RegisterViewModel registerViewModel, string role)
+        public async Task<bool> Register(RegisterDTO registerViewModel, string role)
         {
             var identityUser = new IdentityUser { UserName = registerViewModel.Email, Email = registerViewModel.Email };
             var result1 = await userManager.CreateAsync(identityUser, registerViewModel.Password);
@@ -38,7 +38,7 @@ namespace InventoryManagementAPI.Business
             return false;
         }
 
-        public async Task<SignInResult> Login(LoginViewModel loginViewModel)
+        public async Task<SignInResult> Login(LoginDTO loginViewModel)
         {
             var result = await signInManager.PasswordSignInAsync(loginViewModel.Email, loginViewModel.Password, loginViewModel.RememberMe, false);
 
@@ -51,7 +51,5 @@ namespace InventoryManagementAPI.Business
 
             return null;
         }
-
-
     }
 }

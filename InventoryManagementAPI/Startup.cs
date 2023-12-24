@@ -74,11 +74,8 @@ namespace InventoryManagementAPI
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Showing API V1");
                 });
             }
-            app.UseRouting();
-
             app.UseHttpsRedirection();
-
-            //app.UseRouting();
+            app.UseRouting();
 
             app.UseAuthentication();
 

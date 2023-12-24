@@ -1,14 +1,8 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.SymbolStore;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Business
@@ -22,11 +16,11 @@ namespace InventoryManagementAPI.Business
             this.appDbContext = appDbContext;
         }
 
-        public async Task<List<List<object>>> GetAllEmployeeRequests(string userId)
+        public async Task<List<RequestDTO>> GetAllEmployeeRequests(string userId)
         {
 
             var applicationUser = await appDbContext.ApplicationUser.FindAsync(userId);
-            if(applicationUser == null)
+            if (applicationUser == null)
             {
                 return null;
             }
@@ -38,15 +32,17 @@ namespace InventoryManagementAPI.Business
                 products.Add(await appDbContext.Products.FindAsync(request.ProductId));
             }
 
-            List<List<object>> list = new List<List<object>>();
+            List<RequestDTO> employeeRequests = new List<RequestDTO>();
             for (int i = 0; i < products.Count; i++)
             {
-                List<object> innerList = new List<object> { requests[i].Id, products[i].Name, requests[i].quantity };
-                list.Add(innerList);
+
+                employeeRequests.Add(new RequestDTO { RequestId = requests[i].Id, ProductName = products[i].Name, ProductQuantity = requests[i].quantity, RequestStatus = requests[i].RequestStatus });
             }
 
-            return list;
+            return employeeRequests;
         }
+
+
 
         public async Task<bool> AddNewRequest(string userId, Request request)
         {
@@ -57,7 +53,7 @@ namespace InventoryManagementAPI.Business
             }
 
             var product = await appDbContext.Products.FindAsync(request.ProductId);
-            if (product == null)
+            if (product == null || product.Quantity < request.quantity)
             {
                 return false;
             }
@@ -71,10 +67,10 @@ namespace InventoryManagementAPI.Business
         }
 
 
-        public async Task<bool> PutRequest( Request request)
+        public async Task<bool> PutRequest(Request request)
         {
             var applicationUser = await appDbContext.ApplicationUser.FindAsync(request.UserId);
-            if(applicationUser == null)
+            if (applicationUser == null)
             {
                 return false;
             }
@@ -87,7 +83,7 @@ namespace InventoryManagementAPI.Business
             }
 
             var product = await appDbContext.Products.FindAsync(request.ProductId);
-            if (product == null)
+            if (product == null || product.Quantity < request.quantity)
             {
                 return false;
             }
@@ -98,7 +94,7 @@ namespace InventoryManagementAPI.Business
             return true;
         }
 
-        public async Task<bool> DeleteRequest(string userId, int id)
+        public async Task<bool> DeleteRequest(string userId, int requestId)
         {
             var applicationUser = await appDbContext.ApplicationUser.FindAsync(userId);
             if (applicationUser == null)
@@ -106,7 +102,7 @@ namespace InventoryManagementAPI.Business
                 return false;
             }
 
-            var request = await appDbContext.Requests.FindAsync(id);
+            var request = await appDbContext.Requests.FindAsync(requestId);
 
             if (request == null || request.UserId != applicationUser.IdentityUserId || request.RequestStatus != "Unaddressed")
             {

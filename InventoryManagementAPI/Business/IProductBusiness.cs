@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace InventoryManagementAPI.Business
+namespace InventoryManagementAPI.Business.Interfaces
 {
     public interface IProductBusiness
     {
-        bool AddProductToDepartment(Product product);
-        Task<bool> DeleteProduct(int id);
-        List<List<object>> GetAllEmployeeProducts(string employeeId);
+        Task<bool> AddProductToDepartment(Product product);
+        Task<bool> DeleteProduct(int productId);
+        Task<List<EmployeeProductDTO>> GetAllEmployeeProducts(string employeeId);
         List<Product> GetAllProducts(int departmentId);
         Task<bool> Put(Product product);
     }

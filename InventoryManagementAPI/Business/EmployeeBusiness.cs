@@ -1,10 +1,6 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
 using InventoryManagementAPI.Data;
-using InventoryManagementAPI.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,23 +18,18 @@ namespace InventoryManagementAPI.Business
             this.appDbContext = appDbContext;
         }
 
-        public async Task<object> GetAllEmployees()
+        public async Task<List<EmployeeDTO>> GetAllEmployees()
         {
             var list = await userManager.GetUsersInRoleAsync("Employee");
             
             
-            var result = list.Select(x => new EmployeeReturnModel { Id=x.Id,EmailAddress=x.UserName}).ToList();
+            var result = list.Select(x => new EmployeeDTO { Id = x.Id,EmailAddress = x.UserName}).ToList();
 
 
             return result;
         }
-        class ReturnEmployee
-        {
-            string Id;
-            public string EmailAddress { get; set; }
-        }
 
-        public async Task<object> EmployeeDetails(string id)
+        public async Task<EmployeeDetailsDTO> EmployeeDetails(string id)
         {
             var user = await userManager.FindByIdAsync(id);
 
@@ -54,7 +45,7 @@ namespace InventoryManagementAPI.Business
 
             var employeeProducts = appDbContext.Products.Where(x => employeeProductId.Contains(x.Id)).ToList();
 
-            return new { applicationUser.Name, Requests = employeeRequests, Products = employeeProducts };
+            return new EmployeeDetailsDTO { Name = applicationUser.Name, Requests = employeeRequests, Products = employeeProducts };
         }
 
         public async Task<bool> DeleteEmployee(string id)

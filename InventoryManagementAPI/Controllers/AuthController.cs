@@ -1,29 +1,25 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
-using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
 using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class AccountsController : ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly IAccountsBusiness accountsBusiness;
 
-        public AccountsController(IAccountsBusiness accountsBusiness)
+        public AuthController(IAccountsBusiness accountsBusiness)
         {
             this.accountsBusiness = accountsBusiness;
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO model)
         {
             if (!ModelState.IsValid)
             {
@@ -40,7 +36,7 @@ namespace InventoryManagementAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginViewModel loginViewModel)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginViewModel)
         {
             if (!ModelState.IsValid)
             {
@@ -57,7 +53,7 @@ namespace InventoryManagementAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddAdmin([FromBody] RegisterViewModel model)
+        public async Task<IActionResult> AddAdmin([FromBody] RegisterDTO model)
         {
             if (!ModelState.IsValid)
             {

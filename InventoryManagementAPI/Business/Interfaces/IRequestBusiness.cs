@@ -8,7 +8,7 @@ namespace InventoryManagementAPI.Business.Interfaces
     {
         Task<bool> AddNewRequest(string userId, Request request);
         Task<bool> DeleteRequest(string userId, int id);
-        Task<List<List<object>>> GetAllEmployeeRequests(string userId);
+        Task<List<RequestDTO>> GetAllEmployeeRequests(string userId);
         Task<bool> PutRequest(Request request);
         Task<bool> ReviewRequest(int requestId, bool accept);
     }

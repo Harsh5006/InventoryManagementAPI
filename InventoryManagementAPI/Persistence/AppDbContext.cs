@@ -17,27 +17,11 @@ namespace InventoryManagementAPI.Data
         public DbSet<Department> Departments { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Request> Requests { get; set; }
-
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-        }
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    //base.OnConfiguring(optionsBuilder);
-
-        //    optionsBuilder.UseSqlServer(@"Data Source = (localDb)\ProjectModels;Initial Catalog=InventoryManagementDatabase");
-        //}
 
         public override int SaveChanges()
         {
             return base.SaveChanges();
-        }
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return base.SaveChangesAsync(cancellationToken);
         }
 
     }

@@ -23,7 +23,7 @@ namespace InventoryManagementAPI.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AddRole([FromBody] CreateRoleViewModel createRoleViewModel)
+        public async Task<IActionResult> AddRole([FromBody] CreateRoleDTO createRoleViewModel)
         {
             if (!ModelState.IsValid)
             {

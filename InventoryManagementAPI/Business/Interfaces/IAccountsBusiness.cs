@@ -6,7 +6,7 @@ namespace InventoryManagementAPI.Business.Interfaces
 {
     public interface IAccountsBusiness
     {
-        Task<SignInResult> Login(LoginViewModel loginViewModel);
-        Task<bool> Register(RegisterViewModel registerViewModel, string role);
+        Task<SignInResult> Login(LoginDTO loginViewModel);
+        Task<bool> Register(RegisterDTO registerViewModel, string role);
     }
 }

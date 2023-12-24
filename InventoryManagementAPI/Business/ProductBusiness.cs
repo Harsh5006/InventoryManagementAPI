@@ -1,13 +1,8 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Security.Permissions;
 using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Business
@@ -21,9 +16,9 @@ namespace InventoryManagementAPI.Business
             this.appDbContext = appDbContext;
         }
 
-        public bool AddProductToDepartment(Product product)
+        public async Task<bool> AddProductToDepartment(Product product)
         {
-            Department department = appDbContext.Departments.Find(product.DepartmentId);
+            Department department = await appDbContext.Departments.FindAsync(product.DepartmentId);
 
             if (department == null || product == null)
             {
@@ -41,47 +36,22 @@ namespace InventoryManagementAPI.Business
             return true;
         }
 
-        //public bool AddProductToDepartment1(Product product)
-        //{
-        //    Department department = appDbContext.Departments.Include("Products").FirstOrDefault(x => x.Id == product.DepartmentId);
-        //    if (department == null || product == null)
-        //    {
-        //        return false;
-        //    }
-        //    //var productInDb = appDbContext.Products.Where(x => x.DepartmentId == product.DepartmentId && x.Name == product.Name);
-        //    //if (productInDb.Any())
-        //    //{
-        //    //    return false;
-        //    //}
-
-        //    appDbContext.Products.Add(product);
-        //    department.Products.Add(product);
-        //    appDbContext.SaveChanges();
-
-        //    return true;
-        //}
 
         public List<Product> GetAllProducts(int departmentId)
         {
-
             var products = appDbContext.Products.Where(x => x.DepartmentId == departmentId).ToList();
-
             return products;
-
-            
         }
-
-
-        public async Task<bool> DeleteProduct(int id)
+        public async Task<bool> DeleteProduct(int productId)
         {
-            var product = await appDbContext.Products.FindAsync(id);
+            var product = await appDbContext.Products.FindAsync(productId);
 
             if (product == null)
             {
                 return false;
             }
 
-            var acceptedRequests = appDbContext.Requests.Where(x => x.ProductId == id);
+            var acceptedRequests = appDbContext.Requests.Where(x => x.ProductId == productId);
             if (acceptedRequests.Count() > 0)
             {
                 return false;
@@ -122,7 +92,7 @@ namespace InventoryManagementAPI.Business
             }
         }
 
-        public List<List<Object>> GetAllEmployeeProducts(string employeeId)
+        public async Task<List<EmployeeProductDTO>> GetAllEmployeeProducts(string employeeId)
         {
             var requests = appDbContext.Requests.Where(x => x.UserId == employeeId).ToList();
 
@@ -135,19 +105,17 @@ namespace InventoryManagementAPI.Business
 
             foreach (var request in requests)
             {
-                productList.Add(appDbContext.Products.Find(request.ProductId));
+                productList.Add(await appDbContext.Products.FindAsync(request.ProductId));
             }
-            List<List<Object>> list = new List<List<object>>();
+            List<EmployeeProductDTO> allocatedProducts = new List<EmployeeProductDTO>();
 
             for (int i = 0; i < productList.Count; i++)
             {
-                List<Object> innerList = new List<object> { productList[i].Name, requests[i].quantity };
-                list.Add(innerList);
+                allocatedProducts.Add(new EmployeeProductDTO { ProductName = productList[i].Name,Quantity = requests[i].quantity });
             }
 
-            return list;
+            return allocatedProducts;
         }
-
-
+        
     }
 }

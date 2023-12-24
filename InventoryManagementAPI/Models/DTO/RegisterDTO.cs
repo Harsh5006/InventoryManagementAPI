@@ -2,7 +2,7 @@
 
 namespace InventoryManagementAPI.Models
 {
-    public class RegisterViewModel
+    public class RegisterDTO
     {
         [Required]
         [MinLength(4,ErrorMessage = "Minimum Length for UserName is 4.")]

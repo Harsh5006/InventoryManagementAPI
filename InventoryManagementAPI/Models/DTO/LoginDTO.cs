@@ -2,7 +2,7 @@
 
 namespace InventoryManagementAPI.Models
 {
-    public class LoginViewModel
+    public class LoginDTO
     {
         [Required]
         [EmailAddress]

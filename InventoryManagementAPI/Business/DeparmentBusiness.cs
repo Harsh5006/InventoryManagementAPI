@@ -2,6 +2,7 @@
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,27 +12,20 @@ namespace InventoryManagementAPI.Business
     {
         private readonly AppDbContext appDbContext;
 
-        //private readonly IAppDbContext appDbContext;
-
-        //public DepartmentBusiness(IAppDbContext appDbContext)
-        //{
-        //    this.appDbContext = appDbContext;
-        //}
 
         public DepartmentBusiness(AppDbContext appDbContext)
         {
             this.appDbContext = appDbContext;
         }
 
-        public IQueryable GetAllDepartments()
+        public List<Department> GetAllDepartments()
         {
-            var list = appDbContext.Departments.Select(x => new { Id = x.Id, Name = x.Name });
-            return list;
+            return appDbContext.Departments.ToList();
         }
 
         public bool AddNewDepartment(Department department)
         {
-            var departmentInDb = appDbContext.Departments.Where(x => x.Name == department.Name);
+            var departmentInDb = appDbContext.Departments.Where(x => x.Name.Equals(department.Name));
 
             if (departmentInDb.Any())
             {
@@ -43,9 +37,9 @@ namespace InventoryManagementAPI.Business
             return true;
         }
 
-        public bool Patch(Department department)
+        public async Task<bool> Patch(Department department)
         {
-            var departmentInDb = appDbContext.Departments.Find(department.Id);
+            var departmentInDb = await appDbContext.Departments.FindAsync(department.Id);
             if (departmentInDb == null)
             {
                 return false;
@@ -68,16 +62,16 @@ namespace InventoryManagementAPI.Business
 
 
 
-        public async Task<bool> DeleteDepartment(int id)
+        public async Task<bool> DeleteDepartment(int departmentId)
         {
-            var department = await appDbContext.Departments.FindAsync(id);
+            var department = await appDbContext.Departments.FindAsync(departmentId);
 
             if (department == null)
             {
                 return false;
             }
 
-            var products = appDbContext.Products.Where(x => x.DepartmentId == id);
+            var products = appDbContext.Products.Where(x => x.DepartmentId == departmentId);
             if (products.Count() > 0)
             {
                 return false;
