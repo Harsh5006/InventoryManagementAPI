@@ -1,4 +1,5 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
+using InventoryManagementAPI.Core;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
 using System.Collections;
@@ -10,36 +11,35 @@ namespace InventoryManagementAPI.Business
 {
     public class DepartmentBusiness : IDepartmentBusiness
     {
-        private readonly AppDbContext appDbContext;
+        private readonly IUnitOfWork unitOfWork;
 
-
-        public DepartmentBusiness(AppDbContext appDbContext)
+        public DepartmentBusiness(IUnitOfWork unitOfWork)
         {
-            this.appDbContext = appDbContext;
+            this.unitOfWork = unitOfWork;
         }
 
-        public List<Department> GetAllDepartments()
+        public IEnumerable<Department> GetAllDepartments()
         {
-            return appDbContext.Departments.ToList();
+            return unitOfWork.Departments.GetAll();
         }
 
         public bool AddNewDepartment(Department department)
         {
-            var departmentInDb = appDbContext.Departments.Where(x => x.Name.Equals(department.Name));
+            var departmentInDb = unitOfWork.Departments.SingleOrDefault(x => x.Name.Equals(department.Name));
 
-            if (departmentInDb.Any())
+            if (departmentInDb != null)
             {
                 return false;
             }
 
-            appDbContext.Departments.Add(department);
-            appDbContext.SaveChanges();
+            unitOfWork.Departments.Add(department);
+            unitOfWork.Complete();
             return true;
         }
 
         public async Task<bool> Patch(Department department)
         {
-            var departmentInDb = await appDbContext.Departments.FindAsync(department.Id);
+            var departmentInDb = await unitOfWork.Departments.GetAsync(department.Id);
             if (departmentInDb == null)
             {
                 return false;
@@ -51,11 +51,11 @@ namespace InventoryManagementAPI.Business
             }
             else
             {
-                var departmentInDbWithSameName = appDbContext.Departments.Where(x => x.Name.Equals(department.Name));
-                if (departmentInDbWithSameName.Any()) { return false; }
+                var departmentInDbWithSameName = unitOfWork.Departments.SingleOrDefault(x => x.Name.Equals(department.Name));
+                if (departmentInDbWithSameName != null) { return false; }
 
                 departmentInDb.Name = department.Name;
-                appDbContext.SaveChanges();
+                unitOfWork.Complete();
                 return true;
             }
         }
@@ -64,25 +64,23 @@ namespace InventoryManagementAPI.Business
 
         public async Task<bool> DeleteDepartment(int departmentId)
         {
-            var department = await appDbContext.Departments.FindAsync(departmentId);
+            var department = await unitOfWork.Departments.GetAsync(departmentId);
 
             if (department == null)
             {
                 return false;
             }
 
-            var products = appDbContext.Products.Where(x => x.DepartmentId == departmentId);
+            var products = unitOfWork.Products.Find(x => x.DepartmentId == departmentId);
             if (products.Count() > 0)
             {
                 return false;
             }
 
-            appDbContext.Departments.Remove(department);
-            appDbContext.SaveChanges();
+            unitOfWork.Departments.Remove(department);
+            unitOfWork.Complete();
 
             return true;
         }
-
-
     }
 }

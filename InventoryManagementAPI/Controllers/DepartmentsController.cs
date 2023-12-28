@@ -1,9 +1,14 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
+using InventoryManagementAPI.Core;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
+using InventoryManagementAPI.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Controllers
@@ -25,26 +30,39 @@ namespace InventoryManagementAPI.Controllers
         [AllowAnonymous]
         public IActionResult Get()
         {
-            
-            return Ok(departmentBusiness.GetAllDepartments());
+            try
+            {
+                return Ok(departmentBusiness.GetAllDepartments());
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
+        [Authorize(Roles = "Admin")]
         public IActionResult Post([FromBody] Department department)
         {
             if (!ModelState.IsValid)
             {
-                return StatusCode(StatusCodes.Status400BadRequest);
+                return BadRequest(ModelState);
             }
-            var success = departmentBusiness.AddNewDepartment(department);
+            try {
+                var success = departmentBusiness.AddNewDepartment(department);
 
-            if (success)
-            {
-                return StatusCode(StatusCodes.Status201Created);
+                if (success)
+                {
+                    return StatusCode(StatusCodes.Status201Created);
+                }
+                else return BadRequest();
             }
-            else return BadRequest();
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpDelete("{departmentId}")]
@@ -52,13 +70,21 @@ namespace InventoryManagementAPI.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> Delete(int departmentId)
         {
-            var success = await departmentBusiness.DeleteDepartment(departmentId);
-
-            if (success)
+            try
             {
-                return Ok("Department Successfully Deleted.");
+                var success = await departmentBusiness.DeleteDepartment(departmentId);
+
+                if (success)
+                {
+                    return Ok("Department Successfully Deleted.");
+                }
+                return BadRequest();
             }
-            return BadRequest();
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            
         }
 
         [HttpPatch]
@@ -71,14 +97,21 @@ namespace InventoryManagementAPI.Controllers
             {
                 return BadRequest();
             }
-            department.Id = departmentId;
-            var success = await departmentBusiness.Patch(department);
-
-            if (success)
+            try
             {
-                return Ok("Update Successful");
+                department.Id = departmentId;
+                var success = await departmentBusiness.Patch(department);
+
+                if (success)
+                {
+                    return Ok("Update Successful");
+                }
+                return BadRequest();
             }
-            return BadRequest();
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 }

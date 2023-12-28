@@ -9,7 +9,7 @@ namespace InventoryManagementAPI.Business.Interfaces
     {
         bool AddNewDepartment(Department department);
         Task<bool> DeleteDepartment(int id);
-        List<Department> GetAllDepartments();
+        IEnumerable<Department> GetAllDepartments();
         Task<bool> Patch(Department department);
     }
 }

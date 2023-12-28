@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Persistence.Repositories
 {
@@ -21,9 +22,9 @@ namespace InventoryManagementAPI.Persistence.Repositories
             Context.Set<TEntity>().Add(entity);
         }
 
-        public TEntity Get(int id)
+        public virtual async Task<TEntity> GetAsync(int id)
         {
-            return Context.Set<TEntity>().Find(id);
+            return await Context.Set<TEntity>().FindAsync(id);
         }
 
         public IEnumerable<TEntity> GetAll()
@@ -31,6 +32,10 @@ namespace InventoryManagementAPI.Persistence.Repositories
             return Context.Set<TEntity>().ToList();
         }
 
+        public IEnumerable<TEntity> Find(Func<TEntity,bool> predicate)
+        {
+            return Context.Set<TEntity>().Where(predicate).ToList();
+        }
         public void Remove(TEntity entity)
         {
             Context.Set<TEntity>().Remove(entity);

@@ -1,4 +1,5 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
+using InventoryManagementAPI.Core;
 using InventoryManagementAPI.Data;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
@@ -10,12 +11,12 @@ namespace InventoryManagementAPI.Business
     public class EmployeeBusiness : IEmployeeBusiness
     {
         private readonly UserManager<IdentityUser> userManager;
-        private readonly IAppDbContext appDbContext;
+        private readonly IUnitOfWork unitOfWork;
 
-        public EmployeeBusiness(UserManager<IdentityUser> userManager, IAppDbContext appDbContext)
+        public EmployeeBusiness(UserManager<IdentityUser> userManager,IUnitOfWork unitOfWork)
         {
             this.userManager = userManager;
-            this.appDbContext = appDbContext;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<List<EmployeeDTO>> GetAllEmployees()
@@ -38,12 +39,12 @@ namespace InventoryManagementAPI.Business
                 return null;
             }
 
-            var applicationUser = appDbContext.ApplicationUser.Find(id);
-            var employeeRequests = appDbContext.Requests.Where(x => x.UserId == id).ToList();
+            var applicationUser = await unitOfWork.ApplicationUsers.GetAsync(id);
+            var employeeRequests = unitOfWork.Requests.Find(x => x.UserId == id).ToList();
             var employeeAcceptedRequests = employeeRequests.Where(x => x.RequestStatus == "Accepted").ToList();
             var employeeProductId = employeeAcceptedRequests.Select(x => x.ProductId).ToList();
 
-            var employeeProducts = appDbContext.Products.Where(x => employeeProductId.Contains(x.Id)).ToList();
+            var employeeProducts = unitOfWork.Products.Find(x => employeeProductId.Contains(x.Id)).ToList();
 
             return new EmployeeDetailsDTO { Name = applicationUser.Name, Requests = employeeRequests, Products = employeeProducts };
         }
@@ -56,8 +57,8 @@ namespace InventoryManagementAPI.Business
                 return false;
             }
 
-            var applicationUser = appDbContext.ApplicationUser.Find(id);
-            var employeeRequests = appDbContext.Requests.Where(x => x.UserId == id).ToList();
+            var applicationUser = await unitOfWork.ApplicationUsers.GetAsync(id);
+            var employeeRequests = unitOfWork.Requests.Find(x => x.UserId == id).ToList();
             var employeeAcceptedRequests = employeeRequests.Where(x => x.RequestStatus == "Accepted").ToList();
 
             if (employeeAcceptedRequests.Count > 0)
@@ -69,15 +70,15 @@ namespace InventoryManagementAPI.Business
 
             if (result.Succeeded)
             {
-                appDbContext.ApplicationUser.Remove(applicationUser);
+                unitOfWork.ApplicationUsers.Remove(applicationUser);
                 var requestsId = employeeRequests.Select(x => x.Id).ToList();
                 if(requestsId.Count == 0) { return true; }
                 foreach(var requestId in requestsId)
                 {
-                    var request = await appDbContext.Requests.FindAsync(requestId);
-                    appDbContext.Requests.Remove(request);
+                    var request = await unitOfWork.Requests.GetAsync(requestId);
+                    unitOfWork.Requests.Remove(request);
                 }
-                appDbContext.SaveChanges();
+                unitOfWork.Complete();
                 return true;
             }
             return false;

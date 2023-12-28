@@ -1,4 +1,5 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
+using InventoryManagementAPI.Core;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
 using System.Collections.Generic;
@@ -9,29 +10,30 @@ namespace InventoryManagementAPI.Business
 {
     public class ProductBusiness : IProductBusiness
     {
-        private readonly IAppDbContext appDbContext;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ProductBusiness(IAppDbContext appDbContext)
+        public ProductBusiness(IUnitOfWork unitOfWork)
         {
-            this.appDbContext = appDbContext;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<bool> AddProductToDepartment(Product product)
         {
-            Department department = await appDbContext.Departments.FindAsync(product.DepartmentId);
+            if (product == null) return false;
+            Department department = await unitOfWork.Departments.GetAsync(product.DepartmentId);
 
-            if (department == null || product == null)
+            if (department == null)
             {
                 return false;
             }
-            var productInDb = appDbContext.Products.Where(x => x.DepartmentId == product.DepartmentId && x.Name == product.Name);
+            var productInDb = unitOfWork.Products.Find(x => x.DepartmentId == product.DepartmentId && x.Name == product.Name);
             if (productInDb.Any())
             {
                 return false;
             }
 
-            appDbContext.Products.Add(product);
-            appDbContext.SaveChanges();
+            unitOfWork.Products.Add(product);
+            unitOfWork.Complete();
 
             return true;
         }
@@ -39,26 +41,26 @@ namespace InventoryManagementAPI.Business
 
         public List<Product> GetAllProducts(int departmentId)
         {
-            var products = appDbContext.Products.Where(x => x.DepartmentId == departmentId).ToList();
+            var products = unitOfWork.Products.Find(x => x.DepartmentId == departmentId).ToList();
             return products;
         }
         public async Task<bool> DeleteProduct(int productId)
         {
-            var product = await appDbContext.Products.FindAsync(productId);
+            var product = await unitOfWork.Products.GetAsync(productId);
 
             if (product == null)
             {
                 return false;
             }
 
-            var acceptedRequests = appDbContext.Requests.Where(x => x.ProductId == productId);
+            var acceptedRequests = unitOfWork.Requests.Find(x => x.ProductId == productId);
             if (acceptedRequests.Count() > 0)
             {
                 return false;
             }
 
-            appDbContext.Products.Remove(product);
-            appDbContext.SaveChanges();
+            unitOfWork.Products.Remove(product);
+            unitOfWork.Complete();
 
 
             return true;
@@ -66,7 +68,7 @@ namespace InventoryManagementAPI.Business
 
         public async Task<bool> Put(Product product)
         {
-            var productInDb = await appDbContext.Products.FindAsync(product.Id);
+            var productInDb = await unitOfWork.Products.GetAsync(product.Id);
             if (productInDb == null || productInDb.DepartmentId != product.DepartmentId)
             {
                 return false;
@@ -75,26 +77,26 @@ namespace InventoryManagementAPI.Business
             if (product.Name == productInDb.Name)
             {
                 productInDb.Quantity = product.Quantity;
-                appDbContext.SaveChanges();
+                unitOfWork.Complete();
                 return true;
             }
             else
             {
-                var productWithSameName = appDbContext.Products.Where(x => x.DepartmentId == product.DepartmentId && x.Name == product.Name);
+                var productWithSameName = unitOfWork.Products.Find(x => x.DepartmentId == product.DepartmentId && x.Name == product.Name);
                 if (productWithSameName.Any())
                 {
                     return false;
                 }
                 productInDb.Name = product.Name;
                 productInDb.Quantity = product.Quantity;
-                appDbContext.SaveChanges();
+                unitOfWork.Complete();
                 return true;
             }
         }
 
         public async Task<List<EmployeeProductDTO>> GetAllEmployeeProducts(string employeeId)
         {
-            var requests = appDbContext.Requests.Where(x => x.UserId == employeeId).ToList();
+            var requests = unitOfWork.Requests.Find(x => x.UserId == employeeId).ToList();
 
             if(requests.Count == 0)
             {
@@ -105,7 +107,7 @@ namespace InventoryManagementAPI.Business
 
             foreach (var request in requests)
             {
-                productList.Add(await appDbContext.Products.FindAsync(request.ProductId));
+                productList.Add(await unitOfWork.Products.GetAsync(request.ProductId));
             }
             List<EmployeeProductDTO> allocatedProducts = new List<EmployeeProductDTO>();
 

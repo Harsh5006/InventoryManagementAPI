@@ -1,8 +1,11 @@
-﻿using InventoryManagementAPI.Models;
+﻿using InventoryManagementAPI.Business;
+using InventoryManagementAPI.Business.Interfaces;
+using InventoryManagementAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 
@@ -10,45 +13,37 @@ namespace InventoryManagementAPI.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+
     public class AdministrationController : ControllerBase
     {
-        private readonly RoleManager<IdentityRole> roleManager;
-        private readonly UserManager<IdentityUser> userManager;
+        private readonly IAdministrationBusiness administrationBusiness;
 
-        public AdministrationController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
+        public AdministrationController(IAdministrationBusiness administrationBusiness)
         {
-            this.roleManager = roleManager;
-            this.userManager = userManager;
+            this.administrationBusiness = administrationBusiness;
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> AddRole([FromBody] CreateRoleDTO createRoleViewModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            IdentityRole role = new IdentityRole { Name = createRoleViewModel.RoleName };
-
-
-            var result = await roleManager.CreateAsync(role);
-            if (result.Succeeded)
+            try
             {
-                return StatusCode(StatusCodes.Status201Created);
+                if (await administrationBusiness.AddNewRole(createRoleViewModel))
+                {
+                    return StatusCode(StatusCodes.Status201Created);
+                }
+
+                return BadRequest();
             }
-
-            return BadRequest();
-        }
-
-        [HttpGet]
-        [Authorize]
-        public IActionResult Get()
-        {
-            var user = userManager.GetUserAsync(User);
-            var id = userManager.GetUserIdAsync(user.Result);
-
-            return Ok(id);
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 }

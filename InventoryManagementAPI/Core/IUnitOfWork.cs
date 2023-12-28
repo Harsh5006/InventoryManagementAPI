@@ -10,6 +10,8 @@ namespace InventoryManagementAPI.Core
         public IRequestRepository Requests { get; }
         public IApplicationUserRepository ApplicationUsers { get; }
 
+        public IAuthRepository AuthRepository { get; }
+
         int Complete();
     }
 }

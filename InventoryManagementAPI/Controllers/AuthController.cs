@@ -2,6 +2,7 @@
 using InventoryManagementAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace InventoryManagementAPI.Controllers
@@ -25,14 +26,21 @@ namespace InventoryManagementAPI.Controllers
             {
                 return BadRequest();
             }
-            var result = await accountsBusiness.Register(model,"Employee");
-
-
-            if (result == true)
+            try
             {
-                return StatusCode(StatusCodes.Status201Created);
+                var result = await accountsBusiness.Register(model, "Employee");
+
+
+                if (result == true)
+                {
+                    return StatusCode(StatusCodes.Status201Created);
+                }
+                else return BadRequest();
             }
-            else return BadRequest();
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPost]
@@ -42,14 +50,21 @@ namespace InventoryManagementAPI.Controllers
             {
                 return BadRequest();
             }
-            var result = await accountsBusiness.Login(loginViewModel);
-
-            if(result != null)
+            try
             {
-                return Ok(result);
+                var result = await accountsBusiness.Login(loginViewModel);
+
+                if (result != null)
+                {
+                    return Ok(result);
+                }
+
+                return BadRequest();
             }
-            
-            return BadRequest();
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPost]
@@ -59,14 +74,21 @@ namespace InventoryManagementAPI.Controllers
             {
                 return BadRequest();
             }
-            var result = await accountsBusiness.Register(model, "Admin");
-
-
-            if (result == true)
+            try
             {
-                return StatusCode(StatusCodes.Status201Created);
+                var result = await accountsBusiness.Register(model, "Admin");
+
+
+                if (result == true)
+                {
+                    return StatusCode(StatusCodes.Status201Created);
+                }
+                else return BadRequest();
             }
-            else return BadRequest();
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 }

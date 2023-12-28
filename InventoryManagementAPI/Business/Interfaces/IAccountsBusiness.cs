@@ -8,5 +8,6 @@ namespace InventoryManagementAPI.Business.Interfaces
     {
         Task<SignInResult> Login(LoginDTO loginViewModel);
         Task<bool> Register(RegisterDTO registerViewModel, string role);
+        Task<string> GetUserId(string emailAddress);
     }
 }

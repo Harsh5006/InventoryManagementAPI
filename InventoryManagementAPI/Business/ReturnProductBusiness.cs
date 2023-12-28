@@ -1,4 +1,5 @@
 ﻿using InventoryManagementAPI.Business.Interfaces;
+using InventoryManagementAPI.Core;
 using InventoryManagementAPI.Data;
 using InventoryManagementAPI.Models;
 using System.Linq;
@@ -9,25 +10,25 @@ namespace InventoryManagementAPI.Business
 {
     public class ReturnProductBusiness : IReturnProductBusiness
     {
-        private readonly IAppDbContext appDbContext;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ReturnProductBusiness(IAppDbContext appDbContext)
+        public ReturnProductBusiness(IUnitOfWork unitOfWork)
         {
-            this.appDbContext = appDbContext;
+            this.unitOfWork = unitOfWork;
         }
         public async Task<bool> ReturnProduct(string userId, int requestId)
         {
-            var request = appDbContext.Requests.Find(requestId);
+            var request = await unitOfWork.Requests.GetAsync(requestId);
             if (request == null) return false;
             if (!request.RequestStatus.Equals("Accepted") || !request.UserId.Equals(userId)) return false;
 
             int productId = request.ProductId;
-            var product = await appDbContext.Products.FindAsync(productId);
+            var product = await unitOfWork.Products.GetAsync(productId);
             if (product == null) return false;
 
             product.Quantity += request.quantity;
             request.RequestStatus = "Returned";
-            appDbContext.SaveChanges();
+            unitOfWork.Complete();
 
             return true;
         }
